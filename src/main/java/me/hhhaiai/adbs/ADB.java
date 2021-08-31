@@ -1,11 +1,11 @@
 package me.hhhaiai.adbs;
 
-import me.hhhaiai.adbs.utils.Logs;
 import me.hhhaiai.adbs.utils.ShellUtils;
 import me.hhhaiai.adbs.utils.android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @Copyright © 2021 sanbo Inc. All rights reserved.
@@ -19,8 +19,32 @@ public class ADB {
 //        List<String> devices = devices();
 //        Logs.i("Device list:" + devices.toString());
 
-        String res = ShellUtils.getString("ls");
-        Logs.i("ls:" + res.toString());
+
+        List<String> permissions = getPermissions();
+//        System.out.println(permissions.toString());
+        for (String l : permissions) {
+            System.out.println(l);
+        }
+    }
+
+    /**
+     * 查看设备上已经有的权限，包括系统定义和应用自定义
+     *
+     * @return
+     */
+    private static List<String> getPermissions() {
+        // adb shell pm list permissions
+        CopyOnWriteArrayList<String> permissions = ShellUtils.getArrayUseAdbShell("pm list permissions", "permission:", "");
+        List<String> result = new CopyOnWriteArrayList<String>(permissions);
+        for (String permission : permissions) {
+            if (TextUtils.isEmpty(permission)) {
+                continue;
+            }
+            if (permission.startsWith("All")) {
+                result.remove(permission);
+            }
+        }
+        return result;
     }
 
     /**
