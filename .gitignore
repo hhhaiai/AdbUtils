@@ -1,0 +1,43 @@
+.externalNativeBuild
+import-summary.txt
+
+#java files
+*.class
+*.dex
+
+#for idea temp file
+*.iws
+*.ipr
+*.iml
+~*
+*~
+
+#mac temp file
+*/__MACOSX
+*/.DS_Store
+#test android studio module
+.idea/
+.gradle/
+release/
+build/
+spoon/
+bin/
+releasebak/
+target/
+data/
+
+#for eclipse
+.settings/
+local.properties
+gen/
+*.classpath
+
+#temp file
+*.bak
+
+*.pmd
+sh.exe.stackdump
+
+.vs/
+.vscode/
+
