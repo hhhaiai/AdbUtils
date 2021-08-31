@@ -10,6 +10,10 @@ public class Logs {
         d(TAG, info);
     }
 
+    public static void d(Throwable th) {
+        d(TAG, null, th);
+    }
+
     public static void d(String tag, String info) {
         d(tag, info, null);
     }
@@ -21,6 +25,10 @@ public class Logs {
     /***********************************************/
     public static void i(String info) {
         i(TAG, info);
+    }
+
+    public static void i(Throwable th) {
+        i(TAG, null, th);
     }
 
     public static void i(String tag, String info) {
@@ -37,6 +45,10 @@ public class Logs {
         e(TAG, info);
     }
 
+    public static void e(Throwable th) {
+        e(TAG, null, th);
+    }
+
     public static void e(String tag, String info) {
         e(tag, info, null);
     }
@@ -50,6 +62,10 @@ public class Logs {
         w(TAG, info);
     }
 
+    public static void w(Throwable th) {
+        w(TAG, null, th);
+    }
+
     public static void w(String tag, String info) {
         w(tag, info, null);
     }
@@ -61,6 +77,10 @@ public class Logs {
     /***********************************************/
     public static void wtf(String info) {
         wtf(TAG, info);
+    }
+
+    public static void wtf(Throwable th) {
+        wtf(TAG, null, th);
     }
 
     public static void wtf(String tag, String info) {

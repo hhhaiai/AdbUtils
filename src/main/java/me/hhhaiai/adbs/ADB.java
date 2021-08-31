@@ -1,5 +1,6 @@
 package me.hhhaiai.adbs;
 
+import me.hhhaiai.adbs.utils.Logs;
 import me.hhhaiai.adbs.utils.ShellUtils;
 import me.hhhaiai.adbs.utils.android.text.TextUtils;
 
@@ -8,16 +9,18 @@ import java.util.List;
 
 /**
  * @Copyright © 2021 sanbo Inc. All rights reserved.
- * @Description: adb 命令工具
+ * @Description: adb 命令工具,即将用于支持shell的指令
  * @Version: 1.0
  * @Create: 2021/08/31 15:20:59
  * @author: sanbo
  */
 public class ADB {
     public static void main(String[] args) {
+//        List<String> devices = devices();
+//        Logs.i("Device list:" + devices.toString());
 
-        List<String> devices = devices();
-        System.out.println(devices.toString());
+        String res = ShellUtils.getString("ls");
+        Logs.i("ls:" + res.toString());
     }
 
     /**
@@ -27,7 +30,7 @@ public class ADB {
      */
     public static List<String> devices() {
         List<String> devices = new ArrayList<String>();
-        List<String> ts = ShellUtils.getArrayUseAdb("adb devices");
+        List<String> ts = ShellUtils.getArrayUseAdb("devices");
         if (ts == null || ts.size() == 0) {
             return devices;
         }
