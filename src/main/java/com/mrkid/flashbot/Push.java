@@ -7,7 +7,6 @@ import me.hhhaiai.adbs.utils.Logs;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -25,8 +24,7 @@ public class Push {
         this.remotePath = remotePath;
     }
 
-    //    public void execute(Handler handler) throws InterruptedException, IOException {
-    public void execute() throws InterruptedException, IOException {
+    public void execute() throws Exception {
 
         AdbStream stream = adbConnection.open("sync:");
 
@@ -53,9 +51,7 @@ public class Push {
             if (read < 0) {
                 break;
             }
-
             stream.write(ByteUtils.concat("DATA".getBytes(), ByteUtils.intToByteArray(read)));
-
             if (read == buff.length) {
                 stream.write(buff);
             } else {
@@ -66,13 +62,12 @@ public class Push {
 
             sent += read;
 
-            // 进度同步
+//            // 进度打印
 //            final int progress = (int)(sent * 100 / total);
 //            if (lastProgress != progress) {
-//                handler.sendMessage(handler.obtainMessage(Message.INSTALLING_PROGRESS, Message.PUSH_PART, progress));
+//                System.out.println(progress);
 //                lastProgress = progress;
 //            }
-
         }
 
         stream.write(ByteUtils.concat("DONE".getBytes(), ByteUtils.intToByteArray((int) System.currentTimeMillis())));

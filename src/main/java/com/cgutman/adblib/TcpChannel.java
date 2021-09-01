@@ -32,7 +32,6 @@ public class TcpChannel implements AdbChannel {
         int dataRead = 0;
         do {
             int bytesRead = inputStream.read(buffer, dataRead, length - dataRead);
-
             if (bytesRead < 0)
                 throw new IOException("Stream closed");
             else
