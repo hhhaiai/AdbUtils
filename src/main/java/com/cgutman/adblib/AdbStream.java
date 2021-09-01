@@ -74,13 +74,11 @@ public class AdbStream implements Closeable {
      * Called by the connection thread to send an OKAY packet, allowing the
      * other side to continue transmission.
      *
-     * @throws IOException If the connection fails while sending the packet
+     * @throws java.io.IOException If the connection fails while sending the packet
      */
     void sendReady() throws IOException {
         /* Generate and send a READY packet */
-        byte[] packet = AdbProtocol.generateReady(localId, remoteId);
-        adbConn.outputStream.write(packet);
-        adbConn.outputStream.flush();
+        adbConn.channel.writex(AdbProtocol.generateReady(localId, remoteId));
     }
 
     /**
@@ -120,7 +118,7 @@ public class AdbStream implements Closeable {
      *
      * @return Byte array containing the payload of the write
      * @throws InterruptedException If we are unable to wait for data
-     * @throws IOException          If the stream fails while waiting
+     * @throws java.io.IOException  If the stream fails while waiting
      */
     public byte[] read() throws InterruptedException, IOException {
         byte[] data = null;
@@ -143,35 +141,22 @@ public class AdbStream implements Closeable {
      * Sends a write packet with a given String payload.
      *
      * @param payload Payload in the form of a String
-     * @throws IOException          If the stream fails while sending data
+     * @throws java.io.IOException  If the stream fails while sending data
      * @throws InterruptedException If we are unable to wait to send data
      */
     public void write(String payload) throws IOException, InterruptedException {
         /* ADB needs null-terminated strings */
-        write(payload.getBytes("UTF-8"), false);
-        write(new byte[]{0}, true);
+        write((payload + "\0").getBytes("UTF-8"));
     }
 
     /**
      * Sends a write packet with a given byte array payload.
      *
      * @param payload Payload in the form of a byte array
-     * @throws IOException          If the stream fails while sending data
+     * @throws java.io.IOException  If the stream fails while sending data
      * @throws InterruptedException If we are unable to wait to send data
      */
     public void write(byte[] payload) throws IOException, InterruptedException {
-        write(payload, true);
-    }
-
-    /**
-     * Queues a write packet and optionally sends it immediately.
-     *
-     * @param payload Payload in the form of a byte array
-     * @param flush   Specifies whether to send the packet immediately
-     * @throws IOException          If the stream fails while sending data
-     * @throws InterruptedException If we are unable to wait to send data
-     */
-    public void write(byte[] payload, boolean flush) throws IOException, InterruptedException {
         synchronized (this) {
             /* Make sure we're ready for a write */
             while (!isClosed && !writeReady.compareAndSet(true, false))
@@ -183,17 +168,13 @@ public class AdbStream implements Closeable {
         }
 
         /* Generate a WRITE packet and send it */
-        byte[] packet = AdbProtocol.generateWrite(localId, remoteId, payload);
-        adbConn.outputStream.write(packet);
-
-        if (flush)
-            adbConn.outputStream.flush();
+        adbConn.channel.writex(AdbProtocol.generateWrite(localId, remoteId, payload));
     }
 
     /**
      * Closes the stream. This sends a close message to the peer.
      *
-     * @throws IOException If the stream fails while sending the close message.
+     * @throws java.io.IOException If the stream fails while sending the close message.
      */
     @Override
     public void close() throws IOException {
@@ -206,9 +187,7 @@ public class AdbStream implements Closeable {
             notifyClose();
         }
 
-        byte[] packet = AdbProtocol.generateClose(localId, remoteId);
-        adbConn.outputStream.write(packet);
-        adbConn.outputStream.flush();
+        adbConn.channel.writex(AdbProtocol.generateClose(localId, remoteId));
     }
 
     /**

@@ -1,9 +1,9 @@
 package com.cgutman.adblib;
 
-
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
-import java.net.Socket;
 import java.util.HashMap;
 
 /**
@@ -13,29 +13,13 @@ import java.util.HashMap;
  */
 public class AdbConnection implements Closeable {
 
-    /**
-     * The underlying socket that this class uses to
-     * communicate with the target device.
-     */
-    private Socket socket;
+    AdbChannel channel;
 
     /**
      * The last allocated local stream ID. The ID
      * chosen for the next stream will be this value + 1.
      */
     private int lastLocalId;
-
-    /**
-     * The input stream that this class uses to read from
-     * the socket.
-     */
-    private InputStream inputStream;
-
-    /**
-     * The output stream that this class uses to read from
-     * the socket.
-     */
-    OutputStream outputStream;
 
     /**
      * The backend thread that handles responding to ADB packets.
@@ -86,23 +70,15 @@ public class AdbConnection implements Closeable {
      * Creates a AdbConnection object associated with the socket and
      * crypto object specified.
      *
-     * @param socket The socket that the connection will use for communcation.
-     * @param crypto The crypto object that stores the key pair for authentication.
+     * @param channel The channel that the connection will use for communcation.
+     * @param crypto  The crypto object that stores the key pair for authentication.
      * @return A new AdbConnection object.
-     * @throws IOException If there is a socket error
+     * @throws java.io.IOException If there is a socket error
      */
-    public static AdbConnection create(Socket socket, AdbCrypto crypto) throws IOException {
+    public static AdbConnection create(AdbChannel channel, AdbCrypto crypto) throws IOException {
         AdbConnection newConn = new AdbConnection();
-
         newConn.crypto = crypto;
-
-        newConn.socket = socket;
-        newConn.inputStream = socket.getInputStream();
-        newConn.outputStream = socket.getOutputStream();
-
-        /* Disable Nagle because we're sending tiny packets */
-        socket.setTcpNoDelay(true);
-
+        newConn.channel = channel;
         return newConn;
     }
 
@@ -119,13 +95,13 @@ public class AdbConnection implements Closeable {
                 while (!connectionThread.isInterrupted()) {
                     try {
                         /* Read and parse a message off the socket's input stream */
-                        AdbProtocol.AdbMessage msg = AdbProtocol.AdbMessage.parseAdbMessage(inputStream);
+                        AdbMessage msg = AdbMessage.parseAdbMessage(channel);
 
                         /* Verify magic and checksum */
                         if (!AdbProtocol.validateMessage(msg))
                             continue;
 
-                        switch (msg.command) {
+                        switch (msg.getCommand()) {
                             /* Stream-oriented commands */
                             case AdbProtocol.CMD_OKAY:
                             case AdbProtocol.CMD_WRTE:
@@ -135,27 +111,27 @@ public class AdbConnection implements Closeable {
                                     continue;
 
                                 /* Get the stream object corresponding to the packet */
-                                AdbStream waitingStream = openStreams.get(msg.arg1);
+                                AdbStream waitingStream = openStreams.get(msg.getArg1());
                                 if (waitingStream == null)
                                     continue;
 
                                 synchronized (waitingStream) {
-                                    if (msg.command == AdbProtocol.CMD_OKAY) {
+                                    if (msg.getCommand() == AdbProtocol.CMD_OKAY) {
                                         /* We're ready for writes */
-                                        waitingStream.updateRemoteId(msg.arg0);
+                                        waitingStream.updateRemoteId(msg.getArg0());
                                         waitingStream.readyForWrite();
 
                                         /* Unwait an open/write */
                                         waitingStream.notify();
-                                    } else if (msg.command == AdbProtocol.CMD_WRTE) {
+                                    } else if (msg.getCommand() == AdbProtocol.CMD_WRTE) {
                                         /* Got some data from our partner */
-                                        waitingStream.addPayload(msg.payload);
+                                        waitingStream.addPayload(msg.getPayload());
 
                                         /* Tell it we're ready for more */
                                         waitingStream.sendReady();
-                                    } else if (msg.command == AdbProtocol.CMD_CLSE) {
+                                    } else if (msg.getCommand() == AdbProtocol.CMD_CLSE) {
                                         /* He doesn't like us anymore :-( */
-                                        conn.openStreams.remove(msg.arg1);
+                                        conn.openStreams.remove(msg.getArg1());
 
                                         /* Notify readers and writers */
                                         waitingStream.notifyClose();
@@ -166,9 +142,9 @@ public class AdbConnection implements Closeable {
 
                             case AdbProtocol.CMD_AUTH:
 
-                                byte[] packet;
+                                AdbMessage packet;
 
-                                if (msg.arg0 == AdbProtocol.AUTH_TYPE_TOKEN) {
+                                if (msg.getArg0() == AdbProtocol.AUTH_TYPE_TOKEN) {
                                     /* This is an authentication challenge */
                                     if (conn.sentSignature) {
                                         /* We've already tried our signature, so send our public key */
@@ -177,20 +153,19 @@ public class AdbConnection implements Closeable {
                                     } else {
                                         /* We'll sign the token */
                                         packet = AdbProtocol.generateAuth(AdbProtocol.AUTH_TYPE_SIGNATURE,
-                                                conn.crypto.signAdbTokenPayload(msg.payload));
+                                                conn.crypto.signAdbTokenPayload(msg.getPayload()));
                                         conn.sentSignature = true;
                                     }
 
                                     /* Write the AUTH reply */
-                                    conn.outputStream.write(packet);
-                                    conn.outputStream.flush();
+                                    conn.channel.writex(packet);
                                 }
                                 break;
 
                             case AdbProtocol.CMD_CNXN:
                                 synchronized (conn) {
                                     /* We need to store the max data size */
-                                    conn.maxData = msg.arg1;
+                                    conn.maxData = msg.getArg1();
 
                                     /* Mark us as connected and unwait anyone waiting on the connection */
                                     conn.connected = true;
@@ -205,6 +180,7 @@ public class AdbConnection implements Closeable {
                     } catch (Exception e) {
                         /* The cleanup is taken care of by a combination of this thread
                          * and close() */
+                        e.printStackTrace();
                         break;
                     }
                 }
@@ -226,7 +202,7 @@ public class AdbConnection implements Closeable {
      *
      * @return The maximum data size indicated in the connect packet.
      * @throws InterruptedException If a connection cannot be waited on.
-     * @throws IOException          if the connection fails
+     * @throws java.io.IOException  if the connection fails
      */
     public int getMaxData() throws InterruptedException, IOException {
         if (!connectAttempted)
@@ -249,7 +225,7 @@ public class AdbConnection implements Closeable {
      * Connects to the remote device. This routine will block until the connection
      * completes.
      *
-     * @throws IOException          If the socket fails while connecting
+     * @throws java.io.IOException  If the socket fails while connecting
      * @throws InterruptedException If we are unable to wait for the connection to finish
      */
     public void connect() throws IOException, InterruptedException {
@@ -257,8 +233,7 @@ public class AdbConnection implements Closeable {
             throw new IllegalStateException("Already connected");
 
         /* Write the CONNECT packet */
-        outputStream.write(AdbProtocol.generateConnect());
-        outputStream.flush();
+        channel.writex(AdbProtocol.generateConnect());
 
         /* Start the connection thread to respond to the peer */
         connectAttempted = true;
@@ -281,9 +256,9 @@ public class AdbConnection implements Closeable {
      *
      * @param destination The destination to open on the target
      * @return AdbStream object corresponding to the specified destination
-     * @throws UnsupportedEncodingException If the destination cannot be encoded to UTF-8
-     * @throws IOException                  If the stream fails while sending the packet
-     * @throws InterruptedException         If we are unable to wait for the connection to finish
+     * @throws java.io.UnsupportedEncodingException If the destination cannot be encoded to UTF-8
+     * @throws java.io.IOException                  If the stream fails while sending the packet
+     * @throws InterruptedException                 If we are unable to wait for the connection to finish
      */
     public AdbStream open(String destination) throws UnsupportedEncodingException, IOException, InterruptedException {
         int localId = ++lastLocalId;
@@ -306,8 +281,7 @@ public class AdbConnection implements Closeable {
         openStreams.put(localId, stream);
 
         /* Send the open */
-        outputStream.write(AdbProtocol.generateOpen(localId, destination));
-        outputStream.flush();
+        channel.writex(AdbProtocol.generateOpen(localId, destination));
 
         /* Wait for the connection thread to receive the OKAY */
         synchronized (stream) {
@@ -343,7 +317,7 @@ public class AdbConnection implements Closeable {
     /**
      * This routine closes the Adb connection and underlying socket
      *
-     * @throws IOException if the socket fails to close
+     * @throws java.io.IOException if the socket fails to close
      */
     @Override
     public void close() throws IOException {
@@ -351,8 +325,8 @@ public class AdbConnection implements Closeable {
         if (connectionThread == null)
             return;
 
-        /* Closing the socket will kick the connection thread */
-        socket.close();
+        /* Closing the channel will kick the connection thread */
+        channel.close();
 
         /* Wait for the connection thread to die */
         connectionThread.interrupt();

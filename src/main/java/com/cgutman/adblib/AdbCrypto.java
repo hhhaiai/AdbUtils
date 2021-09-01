@@ -153,9 +153,9 @@ public class AdbCrypto {
      * @param privateKey File containing the RSA private key
      * @param publicKey  File containing the RSA public key
      * @return New AdbCrypto object
-     * @throws IOException              If the files cannot be read
-     * @throws NoSuchAlgorithmException If an RSA key factory cannot be found
-     * @throws InvalidKeySpecException  If a PKCS8 or X509 key spec cannot be found
+     * @throws java.io.IOException                        If the files cannot be read
+     * @throws java.security.NoSuchAlgorithmException     If an RSA key factory cannot be found
+     * @throws java.security.spec.InvalidKeySpecException If a PKCS8 or X509 key spec cannot be found
      */
     public static AdbCrypto loadAdbKeyPair(AdbBase64 base64, File privateKey, File publicKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         AdbCrypto crypto = new AdbCrypto();
@@ -190,7 +190,7 @@ public class AdbCrypto {
      *
      * @param base64 Implementation of base 64 conversion interface required by ADB
      * @return A new AdbCrypto object
-     * @throws NoSuchAlgorithmException If an RSA key factory cannot be found
+     * @throws java.security.NoSuchAlgorithmException If an RSA key factory cannot be found
      */
     public static AdbCrypto generateAdbKeyPair(AdbBase64 base64) throws NoSuchAlgorithmException {
         AdbCrypto crypto = new AdbCrypto();
@@ -209,7 +209,7 @@ public class AdbCrypto {
      *
      * @param payload SHA1 payload to sign
      * @return Signed SHA1 payload
-     * @throws GeneralSecurityException If signing fails
+     * @throws java.security.GeneralSecurityException If signing fails
      */
     public byte[] signAdbTokenPayload(byte[] payload) throws GeneralSecurityException {
         Cipher c = Cipher.getInstance("RSA/ECB/NoPadding");
@@ -225,7 +225,7 @@ public class AdbCrypto {
      * Gets the RSA public key in ADB format.
      *
      * @return Byte array containing the RSA public key in ADB format.
-     * @throws IOException If the key cannot be retrived
+     * @throws java.io.IOException If the key cannot be retrived
      */
     public byte[] getAdbPublicKeyPayload() throws IOException {
         byte[] convertedKey = convertRsaPublicKeyToAdbFormat((RSAPublicKey) keyPair.getPublic());
@@ -244,7 +244,7 @@ public class AdbCrypto {
      *
      * @param privateKey The file to store the encoded private key
      * @param publicKey  The file to store the encoded public key
-     * @throws IOException If the files cannot be written
+     * @throws java.io.IOException If the files cannot be written
      */
     public void saveAdbKeyPair(File privateKey, File publicKey) throws IOException {
         FileOutputStream privOut = new FileOutputStream(privateKey);
