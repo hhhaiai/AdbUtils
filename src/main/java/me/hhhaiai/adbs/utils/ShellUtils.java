@@ -30,90 +30,93 @@ public class ShellUtils {
         return (CopyOnWriteArrayList<String>) getBaseAppend(true, "sh", null, subCommand, null, null);
     }
 
-    /**
-     * 支持 adb devices系列指令
-     *
-     * @param appendBase
-     * @return
-     */
+    //支持 adb devices系列指令
     public static String getStringUseAdb(String appendBase) {
         return (String) getBaseAppend(false, "adb", appendBase, null, null, null);
     }
 
-    /**
-     * 支持 adb devices系列指令,可替换部分内容
-     *
-     * @param appendBase
-     * @param target
-     * @param replacement
-     * @return
-     */
+    //支持 adb devices系列指令,可替换部分内容
     public static String getStringUseAdb(String appendBase, CharSequence target, CharSequence replacement) {
         return (String) getBaseAppend(false, "adb", appendBase, null, target, replacement);
     }
 
-    /**
-     * 支持adb shell->xxx 单个二级指令
-     *
-     * @param subCommand
-     * @return
-     */
+    //支持adb shell->xxx 单个二级指令
     public static String getStringUseAdbShell(String subCommand) {
         return (String) getBaseAppend(false, "adb", "shell", subCommand, null, null);
     }
 
-    /**
-     * 支持adb shell->xxx 单个二级指令，可替换部分内容
-     *
-     * @param subCommand
-     * @return
-     */
+    //支持adb shell->xxx 单个二级指令，可替换部分内容
     public static String getStringUseAdbShell(String subCommand, CharSequence target, CharSequence replacement) {
         return (String) getBaseAppend(false, "adb", "shell", subCommand, target, replacement);
     }
 
+
+    /**************************支持adb -s xxx******************/
+    //支持 adb -s xxx devices系列指令
+    public static String getStringUseAdb(String deviceId, String appendBase) {
+        return (String) getBaseAppend(false, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + appendBase, null, null, null);
+    }
+
+    //支持 adb -s xxx devices系列指令,可替换部分内容
+    public static String getStringUseAdb(String deviceId, String appendBase, CharSequence target, CharSequence replacement) {
+        return (String) getBaseAppend(false, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + appendBase, null, target, replacement);
+    }
+
+    //支持adb -s xxx shell->xxx 单个二级指令
+    public static String getStringUseAdbShell(String deviceId, String subCommand) {
+        return (String) getBaseAppend(false, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + "shell", subCommand, null, null);
+    }
+
+    //支持adb -s xxx shell->xxx 单个二级指令，可替换部分内容
+    public static String getStringUseAdbShell(String deviceId, String subCommand, CharSequence target, CharSequence replacement) {
+        return (String) getBaseAppend(false, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + "shell", subCommand, target, replacement);
+    }
+
     /**
-     * 支持 adb devices系列指令
-     *
-     * @param appendBase
-     * @return
+     * ############################################
      */
+    //支持 adb devices系列指令
     public static CopyOnWriteArrayList<String> getArrayUseAdb(String appendBase) {
         return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", appendBase, null, null, null);
     }
 
-    /**
-     * 支持 adb devices系列指令,可替换部分内容
-     *
-     * @param appendBase
-     * @param target
-     * @param replacement
-     * @return
-     */
+
+    //支持 adb devices系列指令,可替换部分内容
     public static CopyOnWriteArrayList<String> getArrayUseAdb(String appendBase, CharSequence target, CharSequence replacement) {
         return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", appendBase, null, target, replacement);
     }
 
-    /**
-     * 支持adb shell->xxx 单个二级指令
-     *
-     * @param subCommand
-     * @return
-     */
+    //支持adb shell->xxx 单个二级指令
     public static CopyOnWriteArrayList<String> getArrayUseAdbShell(String subCommand) {
         return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", "shell", subCommand, null, null);
     }
 
-    /**
-     * 支持adb shell->xxx 单个二级指令，可替换部分内容
-     *
-     * @param subCommand
-     * @return
-     */
+    //支持adb shell->xxx 单个二级指令，可替换部分内容
     public static CopyOnWriteArrayList<String> getArrayUseAdbShell(String subCommand, CharSequence target, CharSequence replacement) {
         return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", "shell", subCommand, target, replacement);
     }
 
+    /**************************支持adb -s xxx******************/
+//支持 adb devices系列指令
+    public static CopyOnWriteArrayList<String> getArrayUseAdb(String deviceId, String appendBase) {
+        return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + appendBase, null, null, null);
+    }
+
+
+    //支持 adb devices系列指令,可替换部分内容
+    public static CopyOnWriteArrayList<String> getArrayUseAdb(String deviceId, String appendBase, CharSequence target, CharSequence replacement) {
+        return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + appendBase, null, target, replacement);
+    }
+
+    //支持adb shell->xxx 单个二级指令
+    public static CopyOnWriteArrayList<String> getArrayUseAdbShell(String deviceId, String subCommand) {
+        return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + "shell", subCommand, null, null);
+    }
+
+    //支持adb shell->xxx 单个二级指令，可替换部分内容
+    public static CopyOnWriteArrayList<String> getArrayUseAdbShell(String deviceId, String subCommand, CharSequence target, CharSequence replacement) {
+        return (CopyOnWriteArrayList<String>) getBaseAppend(true, "adb", (TextUtils.isEmpty(deviceId) ? "" : " -s " + deviceId + " ") + "shell", subCommand, target, replacement);
+    }
 
     /**
      * 基础工具方法
