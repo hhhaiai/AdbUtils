@@ -1,5 +1,6 @@
 package me.hhhaiai.adbs;
 
+import me.hhhaiai.adbs.utils.IpUtils;
 import me.hhhaiai.adbs.utils.ShellUtils;
 import me.hhhaiai.adbs.utils.android.text.TextUtils;
 
@@ -28,8 +29,31 @@ public class ADB {
 
 //        System.out.println(getAllPkgs());
 
-        pmGrant();
+        String ip = getIp();
+        System.out.println("ip:" + ip);
     }
+
+    public static String getIp() {
+        return getIp("");
+    }
+
+    private static String getIp(String deviceId) {
+        String ipinfo = ShellUtils.getStringUseAdbShell("", "netcfg");
+        if (TextUtils.isEmpty(ipinfo)) {
+            ipinfo = ShellUtils.getStringUseAdbShell("", "ip address|grep wlan0");
+        }
+        List<String> ips = IpUtils.getIpv4(ipinfo);
+        if (ips == null || ips.size() == 0) {
+            return "";
+        }
+        for (String ip : ips) {
+            if (!TextUtils.isEmpty(ip) && !ip.endsWith("255")) {
+                return ip;
+            }
+        }
+        return "";
+    }
+
 
     public static void pmGrant() {
         pmGrant("");

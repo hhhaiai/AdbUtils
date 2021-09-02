@@ -46,31 +46,30 @@ public class AdbTest {
     }
 
     public static void main(String[] args) throws Exception {
-        testShellStream();
-//        testPush();
+//        testShellStream();
+        testPush();
     }
 
-//    private static void testPush() throws Exception {
-//        // Setup the crypto object required for the AdbConnection
-//        AdbCrypto crypto = setupCrypto("pub.key", "priv.key");
-//
-//        // Connect the socket to the remote host
-//        System.out.println("Socket connecting...");
-//        Socket sock = new Socket("192.168.50.111", 5555);
-//        System.out.println("Socket connected");
-//
-//        // Construct the AdbConnection object
-//        AdbConnection conn = AdbConnection.create(new TcpChannel(sock), crypto);
-//
-//        // Start the application layer connection process
-//        System.out.println("ADB connecting...");
-//        conn.connect();
-//        System.out.println("ADB connected, will push");
-//
-//        new Push(conn, new File("build.sh"), "/data/local/tmp/").execute();
-//        System.out.println("ADB connected,  push over");
-//
-//    }
+    private static void testPush() throws Exception {
+        // Setup the crypto object required for the AdbConnection
+        AdbCrypto crypto = setupCrypto("pub.key", "priv.key");
+
+        // Connect the socket to the remote host
+        System.out.println("Socket connecting...");
+        Socket sock = new Socket("192.168.50.111", 5555);
+        System.out.println("Socket connected");
+
+        // Construct the AdbConnection object
+        AdbConnection conn = AdbConnection.create(new TcpChannel(sock), crypto);
+
+        // Start the application layer connection process
+        System.out.println("ADB connecting...");
+        conn.connect();
+        System.out.println("ADB connected, will push");
+
+        Push.push(conn, new File("build.sh"), "/data/local/tmp");
+        System.out.println("ADB connected,  push over");
+    }
 
     private static void testShellStream() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, InterruptedException {
         Scanner in = new Scanner(System.in);
