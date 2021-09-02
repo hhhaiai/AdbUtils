@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 
 public class AdbTest {
     public static void main(String[] args) throws Exception {
-//        testConnect1();
+        testConnect1();
 //        test();
-        testPush();
+//        testPush();
     }
 
 
@@ -115,24 +115,24 @@ public class AdbTest {
     }
 
 
-//    /**
-//     * 测试连接
-//     */
-//    private static void testConnect1() throws IOException, NoSuchAlgorithmException, InterruptedException {
-//        Socket socket = new Socket("192.168.50.208", 5555);
-//
-//        AdbCrypto crypto = AdbCrypto.generateAdbKeyPair(new AdbBase64() {
-//            @Override
-//            public String encodeToString(byte[] data) {
-//                return Base64.getEncoder().encodeToString(data);
-//            }
-//        });
-//
-//        AdbConnection connection = AdbConnection.create(socket, crypto);
-//        connection.connect();
-//
-//        AdbStream stream = connection.open("shell:getprop");
-//        byte[] bs = stream.read();
-//        System.out.println(new String(bs));
-//    }
+    /**
+     * 测试连接
+     */
+    private static void testConnect1() throws IOException, NoSuchAlgorithmException, InterruptedException {
+        Socket socket = new Socket("192.168.4.223", 5555);
+
+        AdbCrypto crypto = AdbCrypto.generateAdbKeyPair(new AdbBase64() {
+            @Override
+            public String encodeToString(byte[] data) {
+                return Base64.getEncoder().encodeToString(data);
+            }
+        });
+
+        AdbConnection connection = AdbConnection.create(socket, crypto);
+        connection.connect();
+
+        AdbStream stream = connection.open("shell:getprop");
+        byte[] bs = stream.read();
+        System.out.println(new String(bs));
+    }
 }

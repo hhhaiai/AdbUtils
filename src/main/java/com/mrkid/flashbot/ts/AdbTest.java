@@ -46,8 +46,8 @@ public class AdbTest {
     }
 
     public static void main(String[] args) throws Exception {
-//        testShellStream();
-        testPush();
+        testShellStream();
+//        testPush();
     }
 
     private static void testPush() throws Exception {
@@ -79,7 +79,7 @@ public class AdbTest {
 
         // Connect the socket to the remote host
         System.out.println("Socket connecting...");
-        Socket sock = new Socket("192.168.50.208", 5555);
+        Socket sock = new Socket("192.168.4.223", 5555);
         System.out.println("Socket connected");
 
         // Construct the AdbConnection object
@@ -91,7 +91,7 @@ public class AdbTest {
         System.out.println("ADB connected");
 
         // Open the shell stream of ADB
-        final AdbStream stream = adb.open("shell:");
+        final AdbStream stream = adb.open("shell:  ip address");
 
         // Start the receiving thread
         new Thread(new Runnable() {

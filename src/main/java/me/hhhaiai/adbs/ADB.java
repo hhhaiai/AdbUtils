@@ -1,6 +1,7 @@
 package me.hhhaiai.adbs;
 
 import me.hhhaiai.adbs.utils.IpUtils;
+import me.hhhaiai.adbs.utils.MacHelper;
 import me.hhhaiai.adbs.utils.ShellUtils;
 import me.hhhaiai.adbs.utils.android.text.TextUtils;
 
@@ -29,20 +30,57 @@ public class ADB {
 
 //        System.out.println(getAllPkgs());
 
-        String ip = getIp();
-        System.out.println("ip:" + ip);
+//        String ip = getIp();
+//        System.out.println("ip:" + ip);
+
+        String mac = getMac();
+        System.out.println("mac:" + mac);
     }
+
+    private static String getMac() {
+        return getMac("");
+    }
+
+    private static String getMac(String deviceId) {
+        List<String> macInfos = ShellUtils.getArrayUseAdbShell("", "ip link");
+//        System.out.println(macInfos.size());
+        for (int i = 0; i < macInfos.size(); i++) {
+            String line = macInfos.get(i);
+//            System.out.println(line);
+            if (!TextUtils.isEmpty(line) && line.length() > 9) {
+                String temp = line.substring(0, 10);
+
+                if (!TextUtils.isEmpty(temp)) {
+                    if (temp.contains("wlan0")) {
+                        String nextLine = macInfos.get(i + 1);
+                        System.err.println("随机:" + line);
+                        System.err.println("随机mac行:" + nextLine);
+                        System.err.println("随机mac:" + MacHelper.getMac(nextLine));
+                    } else if (temp.contains("wlan1")) {
+                        String nextLine = macInfos.get(i + 1);
+                        System.err.println("真实:" + line);
+                        System.err.println("真实mac行:" + nextLine);
+                        System.err.println("真实mac:" + MacHelper.getMac(nextLine));
+                    }
+                }
+            }
+
+        }
+
+        return "";
+    }
+
 
     public static String getIp() {
         return getIp("");
     }
 
     private static String getIp(String deviceId) {
-        String ipinfo = ShellUtils.getStringUseAdbShell("", "netcfg");
-        if (TextUtils.isEmpty(ipinfo)) {
-            ipinfo = ShellUtils.getStringUseAdbShell("", "ip address|grep wlan0");
+        String ipInfo = ShellUtils.getStringUseAdbShell("", "netcfg");
+        if (TextUtils.isEmpty(ipInfo)) {
+            ipInfo = ShellUtils.getStringUseAdbShell("", "ip address|grep wlan0");
         }
-        List<String> ips = IpUtils.getIpv4(ipinfo);
+        List<String> ips = IpUtils.getIpv4(ipInfo);
         if (ips == null || ips.size() == 0) {
             return "";
         }
