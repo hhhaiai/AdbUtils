@@ -1,94 +1,55 @@
 package me.hhhaiai.adbs.utils;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import me.hhhaiai.adbs.utils.android.text.TextUtils;
+
+import java.util.List;
 
 public class MacHelper {
+
+    String line = "link/ether 02:15:b2:00:00:00 brd ff:ff:ff:ff:ff:ff";
+    String mac = "02:15:b2:00:00:00";
+    //单个识别没问题，抽取失败
+    String pattern = "^([A-Fa-f0-9]{2}\\:){5}[A-Fa-f0-9]{2}$";
+
     public static void main(String[] args) {
-        String line = "link/ether 02:15:b2:00:00:00 brd ff:ff:ff:ff:ff:ff";
-        String mac = "02:15:b2:00:00:00";
-//        System.out.println(getMac("link/ether 02:15:b2:00:00:00 brd ff:ff:ff:ff:ff:ff"));
+        List<String> macInfos = ShellUtils.getArrayUseAdbShell("", "ip link");
+//        System.out.println(macInfos.size());
+        for (int i = 0; i < macInfos.size(); i++) {
+            String line = macInfos.get(i);
+//            System.out.println(line);
+            if (!TextUtils.isEmpty(line) && line.length() > 9) {
+                String temp = line.substring(0, 10);
 
-//        System.out.println( validateMAC("02:15:b2:00:00:00"));
-        System.out.println(isValidMacAddress(mac));
+                if (!TextUtils.isEmpty(temp)) {
+                    if (temp.contains("wlan0")) {
+                        String nextLine = macInfos.get(i + 1);
+//                        System.err.println("随机:" + line);
+//                        System.err.println("随机mac行:" + nextLine);
+                        System.err.println("随机mac:" + MacHelper.getMac(nextLine));
+                    } else if (temp.contains("wlan1")) {
+                        String nextLine = macInfos.get(i + 1);
+//                        System.err.println("真实:" + line);
+//                        System.err.println("真实mac行:" + nextLine);
+                        System.err.println("真实mac:" + MacHelper.getMac(nextLine));
+                    }
+                }
+            }
 
-        try {
-            System.out.println("1: "+patternMacPairs.matcher(mac).find());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println("2: "+patternMacTriples.matcher(mac).find());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println(Pattern.compile(
-                            "^([a-fA-F0-9]{2}[:-]){5}[a-fA-F0-9]{2}$"
-                    )
-                    .matcher(line).find());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println(Pattern.compile("^([a-fA-F0-9]{2}[:-]){5}[a-fA-F0-9]{2}$").matcher(line).find());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println(patternMacPairs.matcher(line).find());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println(patternMacTriples.matcher(line).find());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println(
-                    Pattern.compile("^([0-9A-Fa-f]{2}:){5}(([0-9A-Fa-f]{2}:){14})?([0-9A-Fa-f]{2})$"
-                    ).matcher(line).find());
-        } catch (Throwable e) {
-            e.printStackTrace();
         }
     }
 
-    private static Pattern patternMacPairs = Pattern.compile("^([a-fA-F0-9]{2}[:\\.-]?){5}[a-fA-F0-9]{2}$");
-    private static Pattern patternMacTriples = Pattern.compile("^([a-fA-F0-9]{3}[:\\.-]?){3}[a-fA-F0-9]{3}$");
-
-    private static boolean isValidMacAddress(String mac) {
-        // Mac addresses usually are 6 * 2 hex nibbles separated by colons,
-        // but apparently it is legal to have 4 * 3 hex nibbles as well,
-        // and the separators can be any of : or - or . or nothing.
-        return (patternMacPairs.matcher(mac).find() || patternMacTriples.matcher(mac).find());
-    }
-
-    private static final Pattern MAC_PATTERN =
-            Pattern.compile("^([0-9A-Fa-f]{2}[\\.:-]){5}([0-9A-Fa-f]{2})$");
-    private static final String PATTERN = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$";
-
-    //    private static boolean validateMAC(String mac) {
-//        Pattern pattern = Pattern.compile(PATTERN);
-//        Matcher matcher = pattern.matcher(mac);
-//        return matcher.matches();
-//    }
     public static String getMac(String line) {
-        System.out.println(line);
-//        Matcher matcher = MAC_PATTERN.matcher(line);
-        Matcher matcher = Pattern.compile(PATTERN).matcher(line);
-        System.out.println(matcher.groupCount());
-        System.out.println(matcher.find());
-//        if (matcher.groupCount() > 0) {
-//            System.out.println("find:" +matcher.find());
-//            while (matcher.find()) {
-//                String res = matcher.group();
-//                System.out.println(res);
-//                if (!"ff:ff:ff:ff:ff:ff".equals(res)) {
-//                    return res;
-//                }
-//            }
-//        }
+        if (!TextUtils.isEmpty(line) && line.contains(" ")) {
+            String[] ss = line.split(" ");
+            if (ss != null && ss.length > 0) {
+                for (int i = 0; i < ss.length; i++) {
+                    String one = ss[i];
+                    if (!TextUtils.isEmpty(one) && one.contains(":") && !"ff:ff:ff:ff:ff:ff".equals(one)) {
+                        return one;
+                    }
+                }
+            }
+        }
         return "";
     }
 }

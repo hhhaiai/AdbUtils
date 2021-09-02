@@ -42,32 +42,36 @@ public class ADB {
     }
 
     private static String getMac(String deviceId) {
-        List<String> macInfos = ShellUtils.getArrayUseAdbShell("", "ip link");
+        List<String> macInfos = ShellUtils.getArrayUseAdbShell(deviceId, "ip link");
 //        System.out.println(macInfos.size());
+        String pre = "";
         for (int i = 0; i < macInfos.size(); i++) {
             String line = macInfos.get(i);
 //            System.out.println(line);
             if (!TextUtils.isEmpty(line) && line.length() > 9) {
                 String temp = line.substring(0, 10);
 
+
                 if (!TextUtils.isEmpty(temp)) {
                     if (temp.contains("wlan0")) {
                         String nextLine = macInfos.get(i + 1);
-                        System.err.println("随机:" + line);
-                        System.err.println("随机mac行:" + nextLine);
+//                        System.err.println("随机:" + line);
+//                        System.err.println("随机mac行:" + nextLine);
                         System.err.println("随机mac:" + MacHelper.getMac(nextLine));
+                        pre = MacHelper.getMac(nextLine);
                     } else if (temp.contains("wlan1")) {
                         String nextLine = macInfos.get(i + 1);
-                        System.err.println("真实:" + line);
-                        System.err.println("真实mac行:" + nextLine);
+//                        System.err.println("真实:" + line);
+//                        System.err.println("真实mac行:" + nextLine);
                         System.err.println("真实mac:" + MacHelper.getMac(nextLine));
+                        return MacHelper.getMac(nextLine);
                     }
                 }
             }
 
         }
 
-        return "";
+        return pre;
     }
 
 
@@ -76,9 +80,9 @@ public class ADB {
     }
 
     private static String getIp(String deviceId) {
-        String ipInfo = ShellUtils.getStringUseAdbShell("", "netcfg");
+        String ipInfo = ShellUtils.getStringUseAdbShell(deviceId, "netcfg");
         if (TextUtils.isEmpty(ipInfo)) {
-            ipInfo = ShellUtils.getStringUseAdbShell("", "ip address|grep wlan0");
+            ipInfo = ShellUtils.getStringUseAdbShell(deviceId, "ip address|grep wlan0");
         }
         List<String> ips = IpUtils.getIpv4(ipInfo);
         if (ips == null || ips.size() == 0) {
