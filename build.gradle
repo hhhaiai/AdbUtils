@@ -1,0 +1,16 @@
+apply plugin: 'java'
+
+sourceSets {
+
+    main {
+        java {
+            srcDirs = ['src']
+            targetCompatibility = '1.8'
+            sourceCompatibility = '1.8'
+        }
+    }
+
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
